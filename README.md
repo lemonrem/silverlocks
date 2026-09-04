@@ -24,15 +24,23 @@ Silverlocks keeps those decisions in the Skill instructions. Codex loads the wor
 
 ## Install
 
-### With the built-in installer
+### Ask Codex to install it (recommended)
 
-Ask Codex:
+Paste this natural-language request into Codex:
 
 ```text
-$skill-installer Install the skill from https://github.com/lemonrem/silverlocks
+Install or update Silverlocks from https://github.com/lemonrem/silverlocks as a user-level Codex Skill available in all my projects.
+
+Before installation, inspect the user-level Codex setup for Superpowers and Goldilocks, including older entries named goldlocks, and for any Hooks they registered. If found, disable them first, then uninstall their user-level Skills or Plugins and verify that their Hooks are no longer registered in the active configuration.
+
+Remove only those user-level installations and related enablement entries. Preserve unrelated configuration, project files, archives, CURRENT.md files, and local changes. If a matching item exists only inside the current business repository, report it instead of deleting it.
+
+Then install or safely update Silverlocks, verify that it is discoverable and allows implicit invocation, and do not create CURRENT.md merely for installation. Complete all safe steps autonomously, then report what was disabled and uninstalled, the Silverlocks installation path and source commit, validation results, remaining conflicts, and whether Codex needs one final restart.
 ```
 
-### Manually
+Codex can choose its available Skill installation capability from this request; the user does not need to invoke an installer by name.
+
+### Manual fallback
 
 Codex's current user-level Skill directory is `~/.agents/skills`:
 
@@ -42,7 +50,7 @@ git clone https://github.com/lemonrem/silverlocks.git ~/.agents/skills/silverloc
 
 Codex detects Skill changes automatically. If Silverlocks does not appear in `/skills`, restart Codex. The official locations and loading behavior are documented in [Build skills](https://learn.chatgpt.com/docs/build-skills).
 
-If another broad workflow Skill is already installed, disable one of them to avoid duplicate routing. A Skill can be disabled without deleting it in `~/.codex/config.toml`:
+If another broad workflow Skill is already installed, disable one of them to avoid duplicate routing. The prompt above specifically authorizes Codex to disable and uninstall user-level Superpowers and Goldilocks installations before installing Silverlocks. A Skill can be disabled without deleting it in `~/.codex/config.toml`:
 
 ```toml
 [[skills.config]]
@@ -51,26 +59,6 @@ enabled = false
 ```
 
 Restart Codex after changing this configuration.
-
-### Copy-paste prompt for autonomous Codex installation
-
-Paste the following prompt into Codex when you want the agent to inspect the local setup and complete the installation itself:
-
-```text
-You are running in Codex. Autonomously install or safely update the Silverlocks user-level Skill from:
-https://github.com/lemonrem/silverlocks
-
-Requirements:
-1. Inspect the currently discoverable Skills and the configured user-level Skill locations before changing anything.
-2. Prefer the built-in $skill-installer for a new installation. If it cannot install this repository root, use Git to install it at ~/.agents/skills/silverlocks.
-3. If Silverlocks is already installed as a clean Git checkout whose origin is exactly this repository, update it with a fast-forward-only pull. Do not overwrite local edits, replace an unrelated directory, or delete any existing installation; stop and report the conflict instead.
-4. Ensure only one Silverlocks Skill is enabled. If an older Goldilocks or another all-development workflow Skill would duplicate its routing, disable the conflicting Skill in ~/.codex/config.toml without deleting its files. Preserve unrelated configuration.
-5. Verify that SKILL.md exists, the skill name is silverlocks, agents/openai.yaml allows implicit invocation, and scripts/continuity.py is present and executable.
-6. Do not modify the current business repository, do not create .silverlocks/CURRENT.md merely for installation, and do not run project builds or tests.
-7. Report the installed path, source commit, update or conflict action, validation result, and whether Codex must be restarted. If the Skill is not visible after installation, instruct me to restart Codex and verify it with /skills.
-```
-
-This prompt grants authority only for the described local Skill installation and conflict-safe configuration change. It does not authorize changes to a business repository or any external deployment.
 
 ## Use and update
 

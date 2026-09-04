@@ -24,15 +24,23 @@ Silverlocks 把判断放在 Skill 指令中：开发请求匹配描述时才加�
 
 ## 安装
 
-### 使用内置安装器
+### 让 Codex 自主安装（推荐）
 
-向 Codex 输入：
+把下面这段自然语言直接发给 Codex：
 
 ```text
-$skill-installer Install the skill from https://github.com/lemonrem/silverlocks
+请从 https://github.com/lemonrem/silverlocks 安装或更新 Silverlocks，作为对我所有项目生效的用户级 Codex Skill。
+
+安装前先检查用户级 Codex 环境中是否存在 Superpowers、Goldilocks（包括旧名称 goldlocks）以及它们注册的 Hook；如果存在，先停用，再卸载对应的用户级 Skill 或 Plugin，并确认当前启用配置中已不再注册相关 Hook。
+
+只处理这些用户级安装及其启用配置。保留无关配置、业务项目文件、历史归档、CURRENT.md 和本地修改；如果同名内容只存在于当前业务仓库中，只报告，不要删除。
+
+然后安装或安全更新 Silverlocks，验证它能被 Codex 发现并允许隐式调用，不要仅为了安装而创建 CURRENT.md。请自主完成所有安全步骤，最后报告停用和卸载了什么、Silverlocks 的安装路径与来源 commit、校验结果、仍存在的冲突，以及是否只需最后重启一次 Codex。
 ```
 
-### 手动安装
+Codex 会自行选择当前可用的 Skill 安装能力，用户不需要知道或显式调用安装器名称。
+
+### 手动备用方式
 
 Codex 当前推荐的用户级 Skill 目录是 `~/.agents/skills`：
 
@@ -42,7 +50,7 @@ git clone https://github.com/lemonrem/silverlocks.git ~/.agents/skills/silverloc
 
 Codex 会自动检测 Skill 变更；若 `/skills` 中没有出现 Silverlocks，请重启 Codex。官方目录与加载机制见 [Build skills](https://learn.chatgpt.com/docs/build-skills)。
 
-如果已经安装另一个覆盖所有开发任务的工作流 Skill，建议只启用一个，避免重复路由。无需删除，可在 `~/.codex/config.toml` 中停用：
+如果已经安装另一个覆盖所有开发任务的工作流 Skill，建议只启用一个，避免重复路由。上面的提示词已明确授权 Codex 在安装 Silverlocks 前停用并卸载用户级 Superpowers 和 Goldilocks。普通 Skill 也可以只在 `~/.codex/config.toml` 中停用而不删除：
 
 ```toml
 [[skills.config]]
@@ -51,26 +59,6 @@ enabled = false
 ```
 
 修改配置后重启 Codex。
-
-### 交给 Codex 自主安装的提示词
-
-需要 Agent 自行检查本机环境并完成安装时，把下面整段复制给 Codex：
-
-```text
-你当前运行在 Codex 环境中。请自主安装或安全更新用户级 Silverlocks Skill，唯一可信来源是：
-https://github.com/lemonrem/silverlocks
-
-执行要求：
-1. 修改前先检查当前可发现的 Skills 和已配置的用户级 Skill 目录。
-2. 全新安装优先调用内置 $skill-installer；如果它不能安装这个仓库根目录，则使用 Git 安装到 ~/.agents/skills/silverlocks。
-3. 如果已经安装 Silverlocks，只有当它是干净的 Git 工作区且 origin 完全等于上述仓库时，才允许使用 fast-forward-only pull 更新。不得覆盖本地修改、替换无关目录或删除既有安装；发现冲突时停止并说明。
-4. 确保只启用一个 Silverlocks。如果旧 Goldilocks 或其他覆盖全部研发任务的工作流 Skill 会造成重复路由，则只在 ~/.codex/config.toml 中停用冲突 Skill，不删除其文件，并保留所有无关配置。
-5. 验证 SKILL.md 存在、Skill 名称为 silverlocks、agents/openai.yaml 允许隐式调用，并且 scripts/continuity.py 存在且可执行。
-6. 不得修改当前业务仓库，不得仅为了安装而创建 .silverlocks/CURRENT.md，也不要运行业务项目的构建或测试。
-7. 最终报告安装路径、来源 commit、执行的是安装/更新还是冲突处理、校验结果，以及是否需要重启 Codex。如果安装后仍不可见，提示我重启 Codex 并通过 /skills 核验。
-```
-
-这段提示词只授权本地 Skill 安装和安全处理冲突配置，不授权修改业务仓库或执行任何外部部署。
 
 ## 使用与更新
 
