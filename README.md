@@ -68,6 +68,23 @@ git -C ~/.agents/skills/silverlocks pull --ff-only
 
 The installed checkout is what Codex loads; a newer GitHub revision is not active until the local copy is updated. If an update is not detected, restart Codex.
 
+## What a teammate gets after installation
+
+Silverlocks is user-scoped and repository-independent. A teammate can open any Git repository and use the same workflow without copying files from this repository into the project. It does not depend on the author's application repository, a particular framework, a fixed directory layout, or a pre-existing `AGENTS.md`.
+
+On the first development request in a new conversation, Codex uses the installed Skill's helper to locate the current repository. If a resumable task already has `<that-repository>/.silverlocks/CURRENT.md`, Codex can read it once. If substantial work is likely to cross a conversation boundary and no snapshot exists, Codex can create it with the helper. Small tasks that finish in one turn do not create one.
+
+The state always belongs to the teammate's current workspace:
+
+```text
+any-project/
+└── .silverlocks/
+    ├── CURRENT.md
+    └── archive/work/
+```
+
+Git is used only to discover the repository root and record an optional revision. Non-Git workspaces are also supported when their root is passed to the helper explicitly. Project-specific `AGENTS.md` rules, when present, remain authoritative and are composed with Silverlocks rather than required by it.
+
 ## Continuity model
 
 Silverlocks checks for `.silverlocks/CURRENT.md` once on the first development turn for a workspace in a new conversation. It reads an eligible snapshot once, compares the saved objective with the current request, and ignores unrelated state.

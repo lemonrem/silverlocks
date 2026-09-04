@@ -145,6 +145,53 @@ class ContinuityTests(unittest.TestCase):
             self.assertEqual(result.returncode, 2)
             self.assertIn("required heading", json.loads(result.stdout)["reason"])
 
+    def test_git_child_path_uses_unrelated_repository_root(self) -> None:
+        with tempfile.TemporaryDirectory() as raw_root:
+            root = Path(raw_root)
+            subprocess.run(["git", "init", "-q", str(root)], check=True)
+            subprocess.run(["git", "-C", str(root), "config", "user.name", "Fixture"], check=True)
+            subprocess.run(
+                ["git", "-C", str(root), "config", "user.email", "fixture@example.invalid"],
+                check=True,
+            )
+            (root / "README.md").write_text("# Unrelated fixture\n", encoding="utf-8")
+            subprocess.run(["git", "-C", str(root), "add", "README.md"], check=True)
+            subprocess.run(["git", "-C", str(root), "commit", "-qm", "fixture"], check=True)
+            child = root / "packages" / "example"
+            child.mkdir(parents=True)
+
+            write = self.run_script(
+                "write",
+                "--cwd",
+                str(child),
+                "--status",
+                "paused",
+                "--objective",
+                "Resume an unrelated repository task",
+                body=BODY,
+            )
+            self.assertEqual(write.returncode, 0, write.stdout + write.stderr)
+            payload = json.loads(write.stdout)
+            self.assertEqual(Path(payload["workspace_root"]), root.resolve())
+            self.assertEqual(payload["revision_system"], "git")
+            self.assertTrue(payload["base_revision"])
+            self.assertTrue((root / ".silverlocks" / "CURRENT.md").is_file())
+            self.assertFalse((child / ".silverlocks").exists())
+
+            inspect = self.run_script("inspect", "--cwd", str(child))
+            self.assertEqual(inspect.returncode, 0, inspect.stdout + inspect.stderr)
+            self.assertTrue(json.loads(inspect.stdout)["should_read"])
+
+            archive = self.run_script(
+                "archive",
+                "--cwd",
+                str(child),
+                "--slug",
+                "unrelated-repository",
+            )
+            self.assertEqual(archive.returncode, 0, archive.stdout + archive.stderr)
+            self.assertTrue(Path(json.loads(archive.stdout)["path"]).is_file())
+
 
 if __name__ == "__main__":
     unittest.main()

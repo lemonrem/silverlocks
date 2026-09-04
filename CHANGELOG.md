@@ -7,3 +7,4 @@
 - Added bounded, atomic continuity snapshots and intentional archives.
 - Added required tracked Markdown recovery records for Git commits and releases.
 - Added English and Simplified Chinese documentation and focused helper tests.
+- Verified repository-root discovery, snapshot creation, reading, and archiving from a nested path in an unrelated Git project.

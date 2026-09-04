@@ -68,6 +68,23 @@ git -C ~/.agents/skills/silverlocks pull --ff-only
 
 Codex 加载的是本地安装副本；GitHub 上有新提交不等于本地已经更新。拉取后若未自动生效，重启 Codex。
 
+## 同事安装后会获得什么
+
+Silverlocks 安装在用户级目录，与具体仓库无关。同事打开任意 Git 仓库即可使用同一套研发工作流，不需要把本仓库文件复制进业务项目，也不依赖作者的业务仓库、特定技术栈、固定目录结构或预先存在的 `AGENTS.md`。
+
+新会话第一次收到开发请求时，Codex 会通过已安装 Skill 的辅助脚本定位当前仓库。如果可恢复任务已经存在 `<当前仓库>/.silverlocks/CURRENT.md`，则只读取一次；如果较大任务可能跨会话且尚无快照，则可以通过辅助脚本创建。能在当前会话完成的小任务不会生成它。
+
+状态始终属于同事当前打开的工作区：
+
+```text
+任意项目/
+└── .silverlocks/
+    ├── CURRENT.md
+    └── archive/work/
+```
+
+Git 只用于识别仓库根目录和可选地记录 revision。非 Git 工作区也可使用，只需明确把工作区根目录传给辅助脚本。项目存在自己的 `AGENTS.md` 时，该规则仍然优先，并与 Silverlocks 组合使用，而不是 Silverlocks 的运行前提。
+
 ## 连续性与归档
 
 每个新会话第一次处理某个工作区的开发任务时，Silverlocks 检查一次 `.silverlocks/CURRENT.md`。文件结构合格时只读取一次，并将保存的目标与当前请求对照；无关状态会被忽略。
