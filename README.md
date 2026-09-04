@@ -52,6 +52,26 @@ enabled = false
 
 Restart Codex after changing this configuration.
 
+### Copy-paste prompt for autonomous Codex installation
+
+Paste the following prompt into Codex when you want the agent to inspect the local setup and complete the installation itself:
+
+```text
+You are running in Codex. Autonomously install or safely update the Silverlocks user-level Skill from:
+https://github.com/lemonrem/silverlocks
+
+Requirements:
+1. Inspect the currently discoverable Skills and the configured user-level Skill locations before changing anything.
+2. Prefer the built-in $skill-installer for a new installation. If it cannot install this repository root, use Git to install it at ~/.agents/skills/silverlocks.
+3. If Silverlocks is already installed as a clean Git checkout whose origin is exactly this repository, update it with a fast-forward-only pull. Do not overwrite local edits, replace an unrelated directory, or delete any existing installation; stop and report the conflict instead.
+4. Ensure only one Silverlocks Skill is enabled. If an older Goldilocks or another all-development workflow Skill would duplicate its routing, disable the conflicting Skill in ~/.codex/config.toml without deleting its files. Preserve unrelated configuration.
+5. Verify that SKILL.md exists, the skill name is silverlocks, agents/openai.yaml allows implicit invocation, and scripts/continuity.py is present and executable.
+6. Do not modify the current business repository, do not create .silverlocks/CURRENT.md merely for installation, and do not run project builds or tests.
+7. Report the installed path, source commit, update or conflict action, validation result, and whether Codex must be restarted. If the Skill is not visible after installation, instruct me to restart Codex and verify it with /skills.
+```
+
+This prompt grants authority only for the described local Skill installation and conflict-safe configuration change. It does not authorize changes to a business repository or any external deployment.
+
 ## Use and update
 
 Silverlocks is eligible for implicit use on development tasks. Explicit invocation also works:
@@ -68,13 +88,13 @@ git -C ~/.agents/skills/silverlocks pull --ff-only
 
 The installed checkout is what Codex loads; a newer GitHub revision is not active until the local copy is updated. If an update is not detected, restart Codex.
 
-## What a teammate gets after installation
+## Repository-independent behavior
 
-Silverlocks is user-scoped and repository-independent. A teammate can open any Git repository and use the same workflow without copying files from this repository into the project. It does not depend on the author's application repository, a particular framework, a fixed directory layout, or a pre-existing `AGENTS.md`.
+Silverlocks is user-scoped and repository-independent. It works in any Git repository without copying files from this repository into the project. It does not depend on a particular application repository, framework, directory layout, or pre-existing `AGENTS.md`.
 
 On the first development request in a new conversation, Codex uses the installed Skill's helper to locate the current repository. If a resumable task already has `<that-repository>/.silverlocks/CURRENT.md`, Codex can read it once. If substantial work is likely to cross a conversation boundary and no snapshot exists, Codex can create it with the helper. Small tasks that finish in one turn do not create one.
 
-The state always belongs to the teammate's current workspace:
+The state always belongs to the current workspace:
 
 ```text
 any-project/

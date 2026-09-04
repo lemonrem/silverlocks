@@ -52,6 +52,26 @@ enabled = false
 
 修改配置后重启 Codex。
 
+### 交给 Codex 自主安装的提示词
+
+需要 Agent 自行检查本机环境并完成安装时，把下面整段复制给 Codex：
+
+```text
+你当前运行在 Codex 环境中。请自主安装或安全更新用户级 Silverlocks Skill，唯一可信来源是：
+https://github.com/lemonrem/silverlocks
+
+执行要求：
+1. 修改前先检查当前可发现的 Skills 和已配置的用户级 Skill 目录。
+2. 全新安装优先调用内置 $skill-installer；如果它不能安装这个仓库根目录，则使用 Git 安装到 ~/.agents/skills/silverlocks。
+3. 如果已经安装 Silverlocks，只有当它是干净的 Git 工作区且 origin 完全等于上述仓库时，才允许使用 fast-forward-only pull 更新。不得覆盖本地修改、替换无关目录或删除既有安装；发现冲突时停止并说明。
+4. 确保只启用一个 Silverlocks。如果旧 Goldilocks 或其他覆盖全部研发任务的工作流 Skill 会造成重复路由，则只在 ~/.codex/config.toml 中停用冲突 Skill，不删除其文件，并保留所有无关配置。
+5. 验证 SKILL.md 存在、Skill 名称为 silverlocks、agents/openai.yaml 允许隐式调用，并且 scripts/continuity.py 存在且可执行。
+6. 不得修改当前业务仓库，不得仅为了安装而创建 .silverlocks/CURRENT.md，也不要运行业务项目的构建或测试。
+7. 最终报告安装路径、来源 commit、执行的是安装/更新还是冲突处理、校验结果，以及是否需要重启 Codex。如果安装后仍不可见，提示我重启 Codex 并通过 /skills 核验。
+```
+
+这段提示词只授权本地 Skill 安装和安全处理冲突配置，不授权修改业务仓库或执行任何外部部署。
+
 ## 使用与更新
 
 Silverlocks 默认允许在开发任务中隐式加载，也可以显式调用：
@@ -68,13 +88,13 @@ git -C ~/.agents/skills/silverlocks pull --ff-only
 
 Codex 加载的是本地安装副本；GitHub 上有新提交不等于本地已经更新。拉取后若未自动生效，重启 Codex。
 
-## 同事安装后会获得什么
+## 与仓库无关的运行方式
 
-Silverlocks 安装在用户级目录，与具体仓库无关。同事打开任意 Git 仓库即可使用同一套研发工作流，不需要把本仓库文件复制进业务项目，也不依赖作者的业务仓库、特定技术栈、固定目录结构或预先存在的 `AGENTS.md`。
+Silverlocks 安装在用户级目录，与具体仓库无关。打开任意 Git 仓库即可使用同一套研发工作流，不需要把本仓库文件复制进业务项目，也不依赖特定业务仓库、技术栈、固定目录结构或预先存在的 `AGENTS.md`。
 
 新会话第一次收到开发请求时，Codex 会通过已安装 Skill 的辅助脚本定位当前仓库。如果可恢复任务已经存在 `<当前仓库>/.silverlocks/CURRENT.md`，则只读取一次；如果较大任务可能跨会话且尚无快照，则可以通过辅助脚本创建。能在当前会话完成的小任务不会生成它。
 
-状态始终属于同事当前打开的工作区：
+状态始终属于当前打开的工作区：
 
 ```text
 任意项目/

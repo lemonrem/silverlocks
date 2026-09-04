@@ -4,11 +4,11 @@ Date: 2026-09-04
 
 ## Objective
 
-Confirm that a teammate's Silverlocks installation provides the workflow and continuity mechanism in arbitrary projects without depending on the author's application repository.
+Confirm that a user-level Silverlocks installation provides the workflow and continuity mechanism in arbitrary projects without depending on a particular application repository.
 
 ## Outcome
 
-- Documentation now explains the user-scoped installation model and what happens in any teammate repository.
+- Documentation now explains the user-scoped installation model and what happens in any repository.
 - `CURRENT.md` creation remains selective: likely cross-session work can create it, while completed small tasks do not.
 - An integration test exercises a newly initialized, unrelated Git repository from a nested child directory.
 - The test verifies repository-root discovery, `.silverlocks/CURRENT.md` creation, revision capture, eligibility inspection, and archive creation.
