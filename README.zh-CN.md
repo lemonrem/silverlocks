@@ -24,6 +24,8 @@ Silverlocks 把判断放在 Skill 指令中：开发请求匹配描述时才加�
 
 ## 安装
 
+> **前置要求：** 若本机用户级 Codex 环境已经安装或启用 Superpowers、Goldilocks 或旧名 `goldlocks`，必须先禁用、再卸载，确认它们注册的 Hook 已从当前启用配置中移除后，才能安装 Silverlocks。
+
 ### 让 Codex 自主安装（推荐）
 
 把下面这段自然语言直接发给 Codex：

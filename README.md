@@ -24,6 +24,8 @@ Silverlocks keeps those decisions in the Skill instructions. Codex loads the wor
 
 ## Install
 
+> **Prerequisite:** If the user-level Codex environment already has Superpowers, Goldilocks, or a legacy `goldlocks` installation, it must be disabled and then uninstalled before Silverlocks is installed. Any Hooks registered by those installations must also be removed from the active configuration.
+
 ### Ask Codex to install it (recommended)
 
 Paste this natural-language request into Codex:
