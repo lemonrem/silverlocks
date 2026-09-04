@@ -145,6 +145,193 @@ class ContinuityTests(unittest.TestCase):
             self.assertEqual(result.returncode, 2)
             self.assertIn("required heading", json.loads(result.stdout)["reason"])
 
+    def test_body_with_extra_heading_is_rejected(self) -> None:
+        with tempfile.TemporaryDirectory() as raw_root:
+            body = BODY.replace("## Evidence", "## Untracked history\n- Old detail.\n\n## Evidence")
+            result = self.run_script(
+                "write",
+                "--cwd",
+                raw_root,
+                "--status",
+                "paused",
+                "--objective",
+                "Reject extra sections",
+                body=body,
+            )
+            self.assertEqual(result.returncode, 2)
+            self.assertIn("unexpected heading", json.loads(result.stdout)["reason"])
+
+    def test_quoted_objective_round_trips_without_false_replacement(self) -> None:
+        with tempfile.TemporaryDirectory() as raw_root:
+            objective = 'Fix "quoted" path C:\\temp'
+            first = self.run_script(
+                "write",
+                "--cwd",
+                raw_root,
+                "--status",
+                "paused",
+                "--objective",
+                objective,
+                body=BODY,
+            )
+            self.assertEqual(first.returncode, 0, first.stdout + first.stderr)
+
+            second = self.run_script(
+                "write",
+                "--cwd",
+                raw_root,
+                "--status",
+                "paused",
+                "--objective",
+                objective,
+                body=BODY,
+            )
+            self.assertEqual(second.returncode, 0, second.stdout + second.stderr)
+
+            inspect = self.run_script("inspect", "--cwd", raw_root)
+            self.assertEqual(inspect.returncode, 0, inspect.stdout + inspect.stderr)
+            self.assertEqual(json.loads(inspect.stdout)["objective"], objective)
+
+    def test_inspect_rejects_malformed_body(self) -> None:
+        with tempfile.TemporaryDirectory() as raw_root:
+            write = self.run_script(
+                "write",
+                "--cwd",
+                raw_root,
+                "--status",
+                "paused",
+                "--objective",
+                "Validate damaged state",
+                body=BODY,
+            )
+            self.assertEqual(write.returncode, 0, write.stdout + write.stderr)
+            current = Path(raw_root) / ".silverlocks" / "CURRENT.md"
+            damaged = current.read_text(encoding="utf-8").replace("## Evidence", "## Broken")
+            current.write_text(damaged, encoding="utf-8")
+
+            inspect = self.run_script("inspect", "--cwd", raw_root)
+            self.assertEqual(inspect.returncode, 0, inspect.stdout + inspect.stderr)
+            payload = json.loads(inspect.stdout)
+            self.assertFalse(payload["should_read"])
+            self.assertEqual(payload["reason"], "invalid_body")
+
+    def test_failed_replacement_preserves_current_without_archive(self) -> None:
+        with tempfile.TemporaryDirectory() as raw_root:
+            first = self.run_script(
+                "write",
+                "--cwd",
+                raw_root,
+                "--status",
+                "paused",
+                "--objective",
+                "Original task",
+                body=BODY,
+            )
+            self.assertEqual(first.returncode, 0, first.stdout + first.stderr)
+            state_dir = Path(raw_root) / ".silverlocks"
+            original = (state_dir / "CURRENT.md").read_text(encoding="utf-8")
+
+            rejected = self.run_script(
+                "write",
+                "--cwd",
+                raw_root,
+                "--status",
+                "paused",
+                "--objective",
+                "Replacement task",
+                "--archive-existing",
+                "original-task",
+                body="# Current frontier\n",
+            )
+            self.assertEqual(rejected.returncode, 2)
+            self.assertEqual((state_dir / "CURRENT.md").read_text(encoding="utf-8"), original)
+            self.assertFalse((state_dir / "archive").exists())
+
+    def test_oversized_replacement_preserves_current_without_archive(self) -> None:
+        with tempfile.TemporaryDirectory() as raw_root:
+            first = self.run_script(
+                "write",
+                "--cwd",
+                raw_root,
+                "--status",
+                "paused",
+                "--objective",
+                "Original task",
+                body=BODY,
+            )
+            self.assertEqual(first.returncode, 0, first.stdout + first.stderr)
+            state_dir = Path(raw_root) / ".silverlocks"
+            original = (state_dir / "CURRENT.md").read_text(encoding="utf-8")
+            oversized = BODY.replace("- Unit test fixture.", "- " + ("x" * (9 * 1024)))
+
+            rejected = self.run_script(
+                "write",
+                "--cwd",
+                raw_root,
+                "--status",
+                "paused",
+                "--objective",
+                "Replacement task",
+                "--archive-existing",
+                "original-task",
+                body=oversized,
+            )
+            self.assertEqual(rejected.returncode, 2)
+            self.assertEqual(json.loads(rejected.stdout)["reason"], "oversize")
+            self.assertEqual((state_dir / "CURRENT.md").read_text(encoding="utf-8"), original)
+            self.assertFalse((state_dir / "archive").exists())
+
+    def test_symlinked_state_directory_is_rejected(self) -> None:
+        with tempfile.TemporaryDirectory() as raw_root, tempfile.TemporaryDirectory() as raw_outside:
+            state_dir = Path(raw_root) / ".silverlocks"
+            try:
+                state_dir.symlink_to(Path(raw_outside), target_is_directory=True)
+            except OSError as exc:
+                self.skipTest(f"directory symlinks unavailable: {exc}")
+
+            write = self.run_script(
+                "write",
+                "--cwd",
+                raw_root,
+                "--status",
+                "paused",
+                "--objective",
+                "Reject escaped state",
+                body=BODY,
+            )
+            self.assertEqual(write.returncode, 2)
+            self.assertIn("symlink", json.loads(write.stdout)["reason"])
+            self.assertFalse((Path(raw_outside) / "CURRENT.md").exists())
+
+            inspect = self.run_script("inspect", "--cwd", raw_root)
+            self.assertEqual(inspect.returncode, 0, inspect.stdout + inspect.stderr)
+            self.assertEqual(json.loads(inspect.stdout)["reason"], "unsafe_state_directory")
+
+    def test_symlinked_archive_directory_preserves_current(self) -> None:
+        with tempfile.TemporaryDirectory() as raw_root, tempfile.TemporaryDirectory() as raw_outside:
+            write = self.run_script(
+                "write",
+                "--cwd",
+                raw_root,
+                "--status",
+                "paused",
+                "--objective",
+                "Reject escaped archive",
+                body=BODY,
+            )
+            self.assertEqual(write.returncode, 0, write.stdout + write.stderr)
+            state_dir = Path(raw_root) / ".silverlocks"
+            try:
+                (state_dir / "archive").symlink_to(Path(raw_outside), target_is_directory=True)
+            except OSError as exc:
+                self.skipTest(f"directory symlinks unavailable: {exc}")
+
+            archive = self.run_script("archive", "--cwd", raw_root, "--slug", "escaped")
+            self.assertEqual(archive.returncode, 2)
+            self.assertIn("symlink", json.loads(archive.stdout)["reason"])
+            self.assertTrue((state_dir / "CURRENT.md").is_file())
+            self.assertEqual(list(Path(raw_outside).iterdir()), [])
+
     def test_git_child_path_uses_unrelated_repository_root(self) -> None:
         with tempfile.TemporaryDirectory() as raw_root:
             root = Path(raw_root)

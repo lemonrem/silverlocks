@@ -36,8 +36,9 @@ def command_output(arguments: list[str]) -> str | None:
             check=False,
             capture_output=True,
             text=True,
+            timeout=5,
         )
-    except OSError:
+    except (OSError, subprocess.TimeoutExpired, UnicodeError):
         return None
     if completed.returncode != 0:
         return None
@@ -50,12 +51,55 @@ def workspace_root(start: Path) -> Path:
     if current.is_file():
         current = current.parent
     for candidate in (current, *current.parents):
-        if (candidate / STATE_DIR_NAME).is_dir():
+        state_dir = candidate / STATE_DIR_NAME
+        if not state_dir.is_symlink() and state_dir.is_dir():
             return candidate
     git_root = command_output(["git", "-C", str(current), "rev-parse", "--show-toplevel"])
     if git_root:
         return Path(git_root).resolve()
     return current
+
+
+def ensure_safe_directory(path: Path, *, create: bool) -> None:
+    if path.is_symlink():
+        raise ValueError(f"unsafe directory is a symlink: {path}")
+    if path.exists():
+        if not path.is_dir():
+            raise ValueError(f"unsafe directory path is not a directory: {path}")
+        return
+    if not create:
+        return
+
+    try:
+        path.mkdir(mode=0o700)
+    except FileExistsError:
+        pass
+    if path.is_symlink() or not path.is_dir():
+        raise ValueError(f"unsafe directory could not be created safely: {path}")
+
+
+def ensure_safe_state_tree(root: Path, *, create_state: bool, create_archive: bool = False) -> Path:
+    state_dir = root / STATE_DIR_NAME
+    ensure_safe_directory(state_dir, create=create_state)
+    if not create_archive:
+        return state_dir
+
+    archive_dir = state_dir / "archive"
+    ensure_safe_directory(archive_dir, create=True)
+    work_dir = archive_dir / "work"
+    ensure_safe_directory(work_dir, create=True)
+    return work_dir
+
+
+def decode_frontmatter_value(value: str) -> str:
+    if len(value) >= 2 and value[0] == value[-1] == '"':
+        decoded = json.loads(value)
+        if not isinstance(decoded, str):
+            raise ValueError("quoted frontmatter value must be a string")
+        return decoded
+    if len(value) >= 2 and value[0] == value[-1] == "'":
+        return value[1:-1].replace("''", "'")
+    return value
 
 
 def split_frontmatter(text: str) -> tuple[dict[str, str], str] | None:
@@ -72,9 +116,10 @@ def split_frontmatter(text: str) -> tuple[dict[str, str], str] | None:
             continue
         key, value = line.split(":", 1)
         value = value.strip()
-        if len(value) >= 2 and value[0] == value[-1] and value[0] in {'"', "'"}:
-            value = value[1:-1]
-        fields[key.strip()] = value
+        try:
+            fields[key.strip()] = decode_frontmatter_value(value)
+        except (json.JSONDecodeError, ValueError):
+            return None
     return None
 
 
@@ -104,16 +149,26 @@ def parse_timestamp(value: str) -> datetime | None:
 
 def inspect(start: Path) -> int:
     root = workspace_root(start)
-    current = root / STATE_DIR_NAME / "CURRENT.md"
+    state_dir = root / STATE_DIR_NAME
+    try:
+        ensure_safe_state_tree(root, create_state=False)
+    except (OSError, ValueError) as exc:
+        return emit(root, should_read=False, reason="unsafe_state_directory", error=str(exc))
+    current = state_dir / "CURRENT.md"
 
+    if current.is_symlink():
+        return emit(root, should_read=False, reason="unsafe_path", path=str(current))
     if not current.exists():
-        legacy = root / STATE_DIR_NAME / "ACTIVE.md"
+        legacy = state_dir / "ACTIVE.md"
         reason = "legacy_only" if legacy.exists() else "missing"
         return emit(root, should_read=False, reason=reason)
-    if current.is_symlink() or not current.is_file():
+    if not current.is_file():
         return emit(root, should_read=False, reason="unsafe_path", path=str(current))
 
-    size = current.stat().st_size
+    try:
+        size = current.stat().st_size
+    except OSError as exc:
+        return emit(root, should_read=False, reason="unreadable", error=type(exc).__name__)
     if size > MAX_BYTES:
         return emit(
             root,
@@ -142,6 +197,10 @@ def inspect(start: Path) -> int:
         return emit(root, should_read=False, reason="inactive_status", path=str(current), status=fields["status"])
     if not fields["objective"].strip():
         return emit(root, should_read=False, reason="empty_objective", path=str(current))
+    try:
+        validate_body(body)
+    except ValueError as exc:
+        return emit(root, should_read=False, reason="invalid_body", path=str(current), error=str(exc))
 
     declared_root = Path(os.path.expanduser(fields["workspace_root"])).resolve()
     if declared_root != root:
@@ -192,7 +251,8 @@ def normalized_slug(value: str) -> str:
 
 
 def archive_snapshot(root: Path, slug_value: str, *, keep_current: bool) -> Path:
-    current = root / STATE_DIR_NAME / "CURRENT.md"
+    state_dir = ensure_safe_state_tree(root, create_state=False)
+    current = state_dir / "CURRENT.md"
     if not current.exists() or current.is_symlink() or not current.is_file():
         raise ValueError("CURRENT.md is missing or unsafe")
 
@@ -200,8 +260,7 @@ def archive_snapshot(root: Path, slug_value: str, *, keep_current: bool) -> Path
     if not slug:
         raise ValueError("archive slug is empty")
 
-    archive_dir = root / STATE_DIR_NAME / "archive" / "work"
-    archive_dir.mkdir(parents=True, exist_ok=True)
+    archive_dir = ensure_safe_state_tree(root, create_state=False, create_archive=True)
     stamp = datetime.now().astimezone().strftime("%Y%m%d-%H%M%S")
     target = archive_dir / f"{stamp}-{slug}.md"
     sequence = 2
@@ -237,9 +296,21 @@ def validate_body(body: str) -> str:
     if normalized.startswith("---"):
         raise ValueError("body must not contain frontmatter")
     lines = [line.strip() for line in normalized.splitlines()]
+    if not lines or lines[0] != REQUIRED_HEADINGS[0]:
+        raise ValueError(f"body must start with {REQUIRED_HEADINGS[0]}")
     missing = [heading for heading in REQUIRED_HEADINGS if lines.count(heading) != 1]
     if missing:
         raise ValueError("body must contain each required heading exactly once: " + ", ".join(missing))
+    positions = [lines.index(heading) for heading in REQUIRED_HEADINGS]
+    if positions != sorted(positions):
+        raise ValueError("body headings must appear in the required order")
+    unexpected = [
+        line
+        for line in lines
+        if re.match(r"^#{1,6}\s", line) and line not in REQUIRED_HEADINGS
+    ]
+    if unexpected:
+        raise ValueError("body contains an unexpected heading: " + unexpected[0])
     return normalized + "\n"
 
 
@@ -257,40 +328,21 @@ def write_command(
     archive_existing: str | None,
 ) -> int:
     root = workspace_root(start)
-    current = root / STATE_DIR_NAME / "CURRENT.md"
+    state_dir = root / STATE_DIR_NAME
+    try:
+        ensure_safe_state_tree(root, create_state=False)
+    except (OSError, ValueError) as exc:
+        return emit(root, code=2, action="write", ok=False, reason=str(exc))
+    current = state_dir / "CURRENT.md"
     objective = objective.strip()
     if not objective or len(objective) > 240:
         return emit(root, code=2, action="write", ok=False, reason="objective must be 1-240 characters")
-
-    archived_path: Path | None = None
-    if current.exists():
-        try:
-            existing_text = current.read_text(encoding="utf-8")
-            parsed = split_frontmatter(existing_text)
-            existing_objective = parsed[0].get("objective") if parsed else None
-        except (OSError, UnicodeError):
-            existing_objective = None
-        if existing_objective != objective:
-            if not archive_existing:
-                return emit(
-                    root,
-                    code=2,
-                    action="write",
-                    ok=False,
-                    reason="objective_changed; archive the existing snapshot first",
-                )
-            try:
-                archived_path = archive_snapshot(root, archive_existing, keep_current=False)
-            except (OSError, ValueError) as exc:
-                return emit(root, code=2, action="write", ok=False, reason=str(exc))
 
     try:
         body = validate_body(read_body(body_file))
     except (OSError, UnicodeError, ValueError) as exc:
         return emit(root, code=2, action="write", ok=False, reason=str(exc))
 
-    state_dir = root / STATE_DIR_NAME
-    state_dir.mkdir(parents=True, exist_ok=True)
     updated_at = datetime.now().astimezone().isoformat(timespec="seconds")
     revision_system, revision = version_control_revision(root)
     frontmatter = [
@@ -320,8 +372,33 @@ def write_command(
             max_bytes=MAX_BYTES,
         )
 
+    archived_path: Path | None = None
+    should_archive = False
+    if current.is_symlink():
+        return emit(root, code=2, action="write", ok=False, reason="CURRENT.md is unsafe")
+    if current.exists():
+        if not current.is_file():
+            return emit(root, code=2, action="write", ok=False, reason="CURRENT.md is unsafe")
+        try:
+            existing_text = current.read_text(encoding="utf-8")
+            parsed = split_frontmatter(existing_text)
+            existing_objective = parsed[0].get("objective") if parsed else None
+        except (OSError, UnicodeError):
+            existing_objective = None
+        if existing_objective != objective:
+            if not archive_existing:
+                return emit(
+                    root,
+                    code=2,
+                    action="write",
+                    ok=False,
+                    reason="objective_changed; archive the existing snapshot first",
+                )
+            should_archive = True
+
     temp_path: Path | None = None
     try:
+        ensure_safe_state_tree(root, create_state=True)
         descriptor, raw_temp = tempfile.mkstemp(prefix=".CURRENT.", suffix=".tmp", dir=state_dir)
         temp_path = Path(raw_temp)
         with os.fdopen(descriptor, "w", encoding="utf-8", newline="\n") as handle:
@@ -329,11 +406,13 @@ def write_command(
             handle.flush()
             os.fsync(handle.fileno())
         os.chmod(temp_path, 0o600)
+        if should_archive:
+            archived_path = archive_snapshot(root, archive_existing or "replaced", keep_current=True)
         os.replace(temp_path, current)
-    except OSError as exc:
+    except (OSError, ValueError) as exc:
         if temp_path and temp_path.exists():
             temp_path.unlink()
-        return emit(root, code=2, action="write", ok=False, reason=type(exc).__name__)
+        return emit(root, code=2, action="write", ok=False, reason=str(exc) or type(exc).__name__)
 
     return emit(
         root,

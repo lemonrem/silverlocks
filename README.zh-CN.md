@@ -20,7 +20,7 @@ Silverlocks 是一个轻量、无 Hook 的 Codex Skill。它让开发流程随�
 
 Hook 会在事件发生时无条件运行，适合必须脱离模型判断、确定性强制执行的约束。若它只是输出路由信息、重复读取状态或强制执行通用检查，则会增加每轮延迟和维护复杂度。
 
-Silverlocks 把判断放在 Skill 指令中：开发请求匹配描述时才加载工作流；只有确实需要连续性状态时才执行辅助脚本。没有后台常驻机制。
+Silverlocks 把判断放在 Skill 指令中：开发请求匹配描述时才加载工作流；只有确实需要连续性状态时才执行辅助脚本。自动升级同样不依赖 Hook：新会话首次开发任务至多检查一次，随后由 24 小时缓存限流，没有后台常驻机制。
 
 ## 安装
 
@@ -37,7 +37,7 @@ Silverlocks 把判断放在 Skill 指令中：开发请求匹配描述时才加�
 
 只处理这些用户级安装及其启用配置。保留无关配置、业务项目文件、历史归档、CURRENT.md 和本地修改；如果同名内容只存在于当前业务仓库中，只报告，不要删除。
 
-然后安装或安全更新 Silverlocks，验证它能被 Codex 发现并允许隐式调用，不要仅为了安装而创建 CURRENT.md。请自主完成所有安全步骤，最后报告停用和卸载了什么、Silverlocks 的安装路径与来源 commit、校验结果、仍存在的冲突，以及是否只需最后重启一次 Codex。
+然后把 https://github.com/lemonrem/silverlocks 作为保留 `.git` 的干净 Git 克隆安装或安全更新到用户级 Skill 目录，使内置的安全自动升级可用；不要用不含 Git 元数据的文件复制替代。验证 Silverlocks 能被 Codex 发现并允许隐式调用，不要仅为了安装而创建 CURRENT.md。请自主完成所有安全步骤，最后报告停用和卸载了什么、Silverlocks 的安装路径与来源 commit、自动升级可用性、校验结果、仍存在的冲突，以及是否只需最后重启一次 Codex。
 ```
 
 Codex 会自行选择当前可用的 Skill 安装能力，用户不需要知道或显式调用安装器名称。
@@ -70,13 +70,26 @@ Silverlocks 默认允许在开发任务中隐式加载，也可以显式调用�
 $silverlocks 诊断这个问题并实现最小且安全的修复
 ```
 
-手动 Git 安装可这样更新：
+从 `0.2.0` 起，Git 安装会在每个新会话首次遇到开发任务时执行一次安全更新检查。同一安装成功检查后 24 小时内只读取本地缓存，不再访问 GitHub。只有以下条件全部满足才会自动快进：
+
+- 安装目录本身是 Git 根目录，`origin` 是 `lemonrem/silverlocks` 的可信 GitHub 地址；
+- 当前为 `main` 分支，工作区没有已跟踪或未跟踪的本地修改；
+- 远端 `VERSION` 高于本地版本，本地历史可快进到 `origin/main`；
+- 远端仍包含必要的 Silverlocks 文件和隐式调用元数据。
+
+不满足条件时不会覆盖、重置、清理或合并本地内容，当前开发任务也会继续。可手动忽略缓存并执行同一套安全检查：
 
 ```bash
-git -C ~/.agents/skills/silverlocks pull --ff-only
+python3 ~/.agents/skills/silverlocks/scripts/update.py --force
 ```
 
-Codex 加载的是本地安装副本；GitHub 上有新提交不等于本地已经更新。拉取后若未自动生效，重启 Codex。
+只检查、不应用：
+
+```bash
+python3 ~/.agents/skills/silverlocks/scripts/update.py --force --check-only
+```
+
+自动升级不使用 Hook、守护进程、定时任务或系统启动项，只会修改 Silverlocks 自身的干净 Git 克隆及其 Git 元数据，不会修改业务仓库。普通提交不会自动应用；维护者提高 `VERSION` 后才视为新版本。旧于 `0.2.0` 或不含 `.git` 的复制式安装需要先手动更新或重新克隆一次。升级完成后 Codex 通常能自动发现变化；若需要确保新指令立即生效，在当前任务结束后重启一次 Codex。详细规则见 [updates.md](references/updates.md)。
 
 ## 与仓库无关的运行方式
 
@@ -111,15 +124,20 @@ silverlocks/
 ├── agents/openai.yaml
 ├── references/
 │   ├── continuity.md
-│   └── planning-and-verification.md
-├── scripts/continuity.py
-└── tests/test_continuity.py
+│   ├── planning-and-verification.md
+│   └── updates.md
+├── scripts/
+│   ├── continuity.py
+│   └── update.py
+└── tests/
+    ├── test_continuity.py
+    └── test_update.py
 ```
 
 ## 隐私与权限边界
 
-- 不联网、不遥测、不检查更新、不启动后台服务、不注册 Hook。
-- 辅助脚本只读写指定工作区中的 `.silverlocks` 状态。
+- 除新会话首次开发任务触发、受 24 小时缓存限制的可信 GitHub 更新检查外，不联网；不遥测、不启动后台服务、不注册 Hook。
+- 连续性脚本只读写指定工作区中的 `.silverlocks` 状态；更新脚本只修改 Silverlocks 自身的干净 Git 克隆和 Git 元数据。
 - 连续性文件和归档明确禁止写入密钥、Token、敏感地址和原始私密日志。
 - Silverlocks 不会自动取得提交、推送、部署、发送消息或修改外部系统的权限。
 - 当前用户请求和仓库内规则始终优先。

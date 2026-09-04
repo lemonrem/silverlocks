@@ -20,7 +20,7 @@ It is a standalone Skill, not a plugin. Installing it does not start a daemon, r
 
 A Hook runs because an event occurred. That makes sense for deterministic enforcement that must happen independently of model judgment, but it adds latency and operational complexity when used only to announce routing, reread state, or force generic checks.
 
-Silverlocks keeps those decisions in the Skill instructions. Codex loads the workflow when a development request matches the description; the helper script runs only when continuity state is actually needed. There is no background execution.
+Silverlocks keeps those decisions in the Skill instructions. Codex loads the workflow when a development request matches the description; the helper script runs only when continuity state is actually needed. Updates are also hook-free: the first development task in a new conversation can perform one check, then a 24-hour cache rate-limits further checks. There is no background execution.
 
 ## Install
 
@@ -37,7 +37,7 @@ Before installation, inspect the user-level Codex setup for Superpowers and Gold
 
 Remove only those user-level installations and related enablement entries. Preserve unrelated configuration, project files, archives, CURRENT.md files, and local changes. If a matching item exists only inside the current business repository, report it instead of deleting it.
 
-Then install or safely update Silverlocks, verify that it is discoverable and allows implicit invocation, and do not create CURRENT.md merely for installation. Complete all safe steps autonomously, then report what was disabled and uninstalled, the Silverlocks installation path and source commit, validation results, remaining conflicts, and whether Codex needs one final restart.
+Then install or safely update https://github.com/lemonrem/silverlocks as a clean Git clone that retains `.git` in the user-level Skill directory so its built-in safe auto-update can work; do not substitute a file-only copy without Git metadata. Verify that Silverlocks is discoverable and allows implicit invocation, and do not create CURRENT.md merely for installation. Complete all safe steps autonomously, then report what was disabled and uninstalled, the Silverlocks installation path and source commit, auto-update availability, validation results, remaining conflicts, and whether Codex needs one final restart.
 ```
 
 Codex can choose its available Skill installation capability from this request; the user does not need to invoke an installer by name.
@@ -70,13 +70,26 @@ Silverlocks is eligible for implicit use on development tasks. Explicit invocati
 $silverlocks diagnose this failure and implement the smallest safe fix
 ```
 
-Update a manual Git installation with:
+Starting with `0.2.0`, a Git installation performs one safe update check on the first development task in each new conversation. After a successful check, a 24-hour local cache prevents another GitHub request. It fast-forwards automatically only when all of these conditions hold:
+
+- the installation is itself a Git root and `origin` is the trusted `lemonrem/silverlocks` GitHub repository;
+- it is on `main`, with no tracked or untracked local changes;
+- the remote `VERSION` is higher and local history can fast-forward to `origin/main`;
+- required Silverlocks files and implicit-invocation metadata are still present remotely.
+
+If any condition fails, the updater does not overwrite, reset, clean, or merge local content, and the current development task continues. To bypass the cache while applying the same safety checks:
 
 ```bash
-git -C ~/.agents/skills/silverlocks pull --ff-only
+python3 ~/.agents/skills/silverlocks/scripts/update.py --force
 ```
 
-The installed checkout is what Codex loads; a newer GitHub revision is not active until the local copy is updated. If an update is not detected, restart Codex.
+To check without applying:
+
+```bash
+python3 ~/.agents/skills/silverlocks/scripts/update.py --force --check-only
+```
+
+Auto-update uses no Hook, daemon, scheduler, or startup item. It can change only Silverlocks's own clean Git checkout and Git metadata, never a business repository. Ordinary commits are not applied automatically; a maintainer must raise `VERSION` to publish a new version. A pre-`0.2.0` or file-only installation needs one manual update or fresh clone before this mechanism exists. Codex normally detects local Skill changes; restart once after the current task when immediate adoption must be certain. See [updates.md](references/updates.md) for the full policy.
 
 ## Repository-independent behavior
 
@@ -111,15 +124,20 @@ silverlocks/
 ├── agents/openai.yaml
 ├── references/
 │   ├── continuity.md
-│   └── planning-and-verification.md
-├── scripts/continuity.py
-└── tests/test_continuity.py
+│   ├── planning-and-verification.md
+│   └── updates.md
+├── scripts/
+│   ├── continuity.py
+│   └── update.py
+└── tests/
+    ├── test_continuity.py
+    └── test_update.py
 ```
 
 ## Privacy and permissions
 
-- No network calls, telemetry, update checks, background services, or Hooks.
-- The helper reads and writes only the selected workspace's `.silverlocks` state.
+- No network calls except the trusted GitHub update check triggered by a new conversation's first development task and rate-limited by a 24-hour cache; no telemetry, background services, or Hooks.
+- The continuity helper reads and writes only the selected workspace's `.silverlocks` state. The updater can modify only Silverlocks's own clean Git checkout and Git metadata.
 - Secret material is explicitly prohibited from continuity and archive files.
 - Silverlocks does not grant permission to commit, push, deploy, message people, or mutate external systems.
 - Workspace instructions and the user's current request remain authoritative.
