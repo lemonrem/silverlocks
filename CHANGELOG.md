@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.2.1 - 2026-09-06
+
+- Separated proportional planning from approval: carry existing authorization forward and ask only for material missing choices or authority.
+- Preserved the active objective when follow-up questions and corrections arrive.
+- Reject incomplete updates with missing, empty, symlinked or directory-shaped required files, including the three workflow references.
+- Added regression cases proving rejected updates preserve the installed revision and version.
+
 ## 0.2.0 - 2026-09-04
 
 - Added a hook-free, once-per-conversation update check with a 24-hour cache.

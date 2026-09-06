@@ -21,6 +21,7 @@ Automatic application requires all of these conditions:
 - the remote has a strictly higher three-part `VERSION`;
 - the local revision is an ancestor of `origin/main`;
 - required Skill files and implicit-invocation metadata are present remotely.
+- required scripts and reference documents are nonempty regular files, not symlinks or directories.
 
 The update is a fast-forward with Git Hooks disabled for that operation. If any condition fails, the updater preserves local files and returns structured JSON explaining why. Never work around a rejection by deleting changes, resetting history, changing the remote, or forcing a merge unless the user explicitly asks for installation repair.
 

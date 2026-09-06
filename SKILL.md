@@ -11,7 +11,7 @@ Apply this skill automatically to software development work in any language, fra
 
 Stay Direct for a small, cohesive, reversible change with a clear implementation and focused verification. Diagnose first when the cause is uncertain, evidence conflicts, or a prior fix failed.
 
-Use the Plan Gate when risk or coordination is material: dependent cross-module stages, contracts or schema, persisted data, security, deployment or environment boundaries, important ambiguity, or likely cross-session work. Before editing, give one concise best recommendation with scope and the material tradeoff. Obtain approval unless the user has already explicitly approved that recommendation. After approval, read [planning-and-verification.md](references/planning-and-verification.md), write the proportional execution plan, and carry it out. Do not read that reference merely to decide whether the gate applies.
+Use a proportional plan when risk or coordination is material: dependent cross-module stages, contracts or schema, persisted data, security, deployment or environment boundaries, important ambiguity, or likely cross-session work. Read [planning-and-verification.md](references/planning-and-verification.md), state the intended outcome and material tradeoff, and carry out the authorized work. Planning is not an approval gate. Existing user authorization persists; ask only when a missing decision materially changes the intended result, required authority, or reversibility. Continue useful inspection and preparation while that decision is pending.
 
 Delegate only when independent ready work outweighs briefing and integration cost and current host/workspace policy permits it.
 

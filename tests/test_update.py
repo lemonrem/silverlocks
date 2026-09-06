@@ -56,6 +56,9 @@ class UpdateTests(unittest.TestCase):
         self.git(publisher, "config", "user.email", "silverlocks@example.invalid")
         (publisher / "agents").mkdir()
         (publisher / "scripts").mkdir()
+        (publisher / "references").mkdir()
+        for name in ("planning-and-verification.md", "continuity.md", "updates.md"):
+            (publisher / "references" / name).write_text("# Test reference\n", encoding="utf-8")
         (publisher / "VERSION").write_text("0.2.0\n", encoding="utf-8")
         (publisher / "SKILL.md").write_text("---\nname: silverlocks\ndescription: test\n---\n", encoding="utf-8")
         (publisher / "agents" / "openai.yaml").write_text(
@@ -106,6 +109,28 @@ class UpdateTests(unittest.TestCase):
             self.assertEqual(payload["action"], "dirty_worktree")
             self.assertTrue((install / "local-note.txt").is_file())
             self.assertEqual((install / "VERSION").read_text(encoding="utf-8"), "0.2.0\n")
+
+    def test_incomplete_or_indirect_remote_files_do_not_replace_install(self) -> None:
+        for damage in ("missing", "empty", "symlink", "directory"):
+            with self.subTest(damage=damage):
+                temporary, _remote, publisher, install, trusted = self.create_install()
+                with temporary:
+                    required = publisher / "references" / "continuity.md"
+                    required.unlink()
+                    if damage == "empty":
+                        required.write_text("", encoding="utf-8")
+                    elif damage == "symlink":
+                        required.symlink_to("../SKILL.md")
+                    elif damage == "directory":
+                        required.mkdir()
+                        (required / "placeholder").write_text("test", encoding="utf-8")
+                    old_head = self.git(install, "rev-parse", "HEAD").stdout
+                    self.publish_version(publisher, "0.3.0")
+                    payload = UPDATE.perform_update(install, force=True, trusted_origins=trusted, now=1_000)
+                    self.assertEqual(payload["action"], "invalid_remote_tree", payload)
+                    self.assertFalse(payload["ok"])
+                    self.assertEqual(self.git(install, "rev-parse", "HEAD").stdout, old_head)
+                    self.assertEqual((install / "VERSION").read_text(), "0.2.0\n")
 
     def test_diverged_history_is_not_merged(self) -> None:
         temporary, _remote, publisher, install, trusted = self.create_install()

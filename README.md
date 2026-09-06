@@ -10,7 +10,7 @@ It is a standalone Skill, not a plugin. Installing it does not start a daemon, r
 
 - Automatically applies to software-development tasks through its skill description and `allow_implicit_invocation: true` metadata.
 - Keeps small, clear, reversible changes in a direct workflow.
-- Uses a Plan Gate for cross-module work, contracts, persisted data, security, deployment boundaries, material ambiguity, or likely cross-session work.
+- Plans cross-module or higher-risk work proportionally, carrying forward existing authorization and asking only for material missing decisions or authority.
 - Preserves every relevant specialist Skill instead of replacing or suppressing it.
 - Uses focused tests and component-scoped restarts instead of habitual full regression and full builds.
 - Keeps resumable state in one compact, replace-only `.silverlocks/CURRENT.md` file.

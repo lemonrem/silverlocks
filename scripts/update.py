@@ -29,6 +29,9 @@ REQUIRED_REMOTE_FILES = (
     "agents/openai.yaml",
     "scripts/continuity.py",
     "scripts/update.py",
+    "references/planning-and-verification.md",
+    "references/continuity.md",
+    "references/updates.md",
 )
 
 
@@ -154,8 +157,14 @@ def result(root: Path, action: str, *, ok: bool = True, **details: object) -> di
 
 def validate_remote_tree(root: Path) -> str | None:
     for relative_path in REQUIRED_REMOTE_FILES:
-        if git(root, "cat-file", "-e", f"{REMOTE_REF}:{relative_path}").returncode != 0:
+        entry = git_text(root, "ls-tree", REMOTE_REF, "--", relative_path)
+        if entry is None:
             return f"missing required file: {relative_path}"
+        mode, object_type, _rest = entry.split(maxsplit=2)
+        if mode not in {"100644", "100755"} or object_type != "blob":
+            return f"required file is not a regular file: {relative_path}"
+        if git_text(root, "show", f"{REMOTE_REF}:{relative_path}") is None:
+            return f"required file is empty or unreadable: {relative_path}"
 
     skill = git_text(root, "show", f"{REMOTE_REF}:SKILL.md")
     metadata = git_text(root, "show", f"{REMOTE_REF}:agents/openai.yaml")

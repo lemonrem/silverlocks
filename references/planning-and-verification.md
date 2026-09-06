@@ -1,10 +1,10 @@
 # Planning and verification
 
-## Choose Direct or Plan Gate
+## Choose Direct or planned execution
 
 Use Direct when the intended change is small and clear, has a narrow blast radius, is easy to reverse, and can be checked with one or a few focused commands. A single bug fix or localized behavior or configuration adjustment normally qualifies even when it touches a test beside the implementation.
 
-Use the Plan Gate when one or more of these materially changes the risk:
+Use planned execution when one or more of these materially changes the risk:
 
 - several dependent stages or multiple subsystems must change together;
 - an API, database schema, persisted data, authentication, authorization, or external contract changes;
@@ -12,13 +12,15 @@ Use the Plan Gate when one or more of these materially changes the risk:
 - the cause or desired product behavior is still ambiguous enough that coding could head in different directions;
 - the work is likely to span a session boundary or needs a durable recovery point.
 
-File count is supporting evidence, not the decision rule. A mechanical multi-file rename can stay Direct; a one-line authorization change may require the Plan Gate.
+File count is supporting evidence, not the decision rule. A mechanical multi-file rename can stay Direct; a one-line authorization change may need a plan and targeted verification.
 
-## Plan Gate interaction
+## Planning and authorization
 
-Before implementation, present one recommended direction with its scope and important tradeoff. Prefer a best-effort assumption over multiple rounds of questions. Ask one concise approval question only if the user has not already approved that specific direction. A later “do it,” “continue,” or equivalent response to the recommendation counts as approval; a broad original request does not approve an unmentioned architecture or expanded scope.
+Present one recommended direction with its scope and important tradeoff. Infer routine implementation choices from the request and repository evidence, then proceed within the user's authorization. A plan, cross-module change, or deployment boundary alone does not require another approval. Preserve established task scope when the user asks a follow-up question or gives a correction.
 
-After approval, write an actionable plan in the conversation or active planning facility. Create a workspace plan file only when local policy requires one, the work must cross a session boundary, or the user asks for a durable plan. The plan should contain:
+Ask only when a missing choice materially changes the outcome or the next action requires authority the user has not supplied. Finish the independent inspection and preparation needed to make that question concrete. Do not silently expand scope into a new architecture, destructive migration, external message, or additional deployment target. Respect workspace-specific release steps when release is already authorized.
+
+Write an actionable plan in the conversation or active planning facility. Create a workspace plan file only when local policy requires one, the work must cross a session boundary, or the user asks for a durable plan. Include the following where relevant:
 
 1. target outcome and explicit non-goals;
 2. affected components, contracts, data, and runtime boundaries;
