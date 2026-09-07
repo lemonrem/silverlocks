@@ -9,6 +9,7 @@ It is a standalone Skill, not a plugin. Installing it does not start a daemon, r
 ## What it changes
 
 - Automatically applies to software-development tasks through its skill description and `allow_implicit_invocation: true` metadata.
+- Treats defect feedback as a request to act in context, continues through fixable failures, and checks for remaining authorized work before ending the task. Explicit analysis-only requests remain read-only.
 - Keeps small, clear, reversible changes in a direct workflow.
 - Plans cross-module or higher-risk work proportionally, carrying forward existing authorization and asking only for material missing decisions or authority.
 - Preserves every relevant specialist Skill instead of replacing or suppressing it.
@@ -89,7 +90,7 @@ To check without applying:
 python3 ~/.agents/skills/silverlocks/scripts/update.py --force --check-only
 ```
 
-Auto-update uses no Hook, daemon, scheduler, or startup item. It can change only Silverlocks's own clean Git checkout and Git metadata, never a business repository. Ordinary commits are not applied automatically; a maintainer must raise `VERSION` to publish a new version. A pre-`0.2.0` or file-only installation needs one manual update or fresh clone before this mechanism exists. Codex normally detects local Skill changes; restart once after the current task when immediate adoption must be certain. See [updates.md](references/updates.md) for the full policy.
+Auto-update uses no Hook, daemon, scheduler, or startup item. It can change only Silverlocks's own clean Git checkout and Git metadata, never a business repository. Ordinary commits are not applied automatically; a maintainer must raise `VERSION` to publish a new version. A pre-`0.2.0` or file-only installation needs one manual update or fresh clone before this mechanism exists. After an update, reread the entrypoint and changed references used by the task. Codex normally detects local Skill changes; restarting after the task is only a fallback if discovery does not refresh. See [updates.md](references/updates.md) for the full policy.
 
 ## Repository-independent behavior
 

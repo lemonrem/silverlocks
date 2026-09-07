@@ -1,11 +1,19 @@
 ---
 name: silverlocks
-description: Use for every software development task, including codebase analysis, implementation, modification, debugging, refactoring, review, testing, build or configuration changes, deployment, and release. Silently choose the smallest useful execution structure; do not use for pure conversation or unrelated non-development work unless explicitly invoked.
+description: Use for every software development task, including implementation, defect reports, debugging, review, tests, configuration, deployment, and release. Carry requested work through execution and verification; choose the smallest useful workflow. Do not use for pure conversation or unrelated non-development work unless explicitly invoked.
 ---
 
 # Silverlocks
 
 Apply this skill automatically to software development work in any language, framework, repository layout, or build system. It chooses workflow shape; it does not replace engineering judgment, specialist skills, workspace-local rules, or the user's authority.
+
+## Act on the intended outcome
+
+Interpret the request in the context of the active task. “Can you fix…”, “help me…”, “this still fails”, and feedback such as “目前还是只回答、不执行” request work when they concern the artifact or behavior being developed. The user does not need to supply an imperative or repeat permission to repair the same defect. Use the available tools to inspect, make the necessary scoped change, and verify it in this turn. A statement of intent, explanation, suggested patch, or command for the user to run does not substitute for carrying out work the agent can perform.
+
+A question asking how something works, an explicit analysis/review-only request, or a feasibility assessment can be completed with findings. Do not infer permission for production changes from an assessment request. If intent is materially ambiguous, start useful read-only inspection and clarify only the decision that prevents further progress.
+
+Before ending an action task, compare the requested outcome with the actual result. If a necessary, authorized next action is available, take it instead of sending a final answer. Completion requires the requested artifact or state plus applicable verification; a genuine blocker requires evidence, a precise unmet prerequisite, and a statement of what remains incomplete. “I can do that next”, “let me know if you want a fix”, ordinary complexity, and a failed first attempt are not stopping conditions. A status question does not cancel remaining work.
 
 ## Use the least process that fits
 
@@ -19,7 +27,7 @@ Delegate only when independent ready work outweighs briefing and integration cos
 
 On the first development turn in a new conversation, before inspecting continuity state, run `scripts/update.py` from this skill directory. It checks at most once every 24 hours and only fast-forwards a clean `main` checkout whose `origin` is the trusted `lemonrem/silverlocks` GitHub repository and whose remote `VERSION` is higher. It never overwrites local changes or merges diverged history.
 
-Treat `cached` and `up_to_date` as silent success. If it returns `updated`, continue the current task using the instructions already loaded and tell the user that restarting Codex after the task is recommended so the new instructions are certainly active. If it refuses or cannot check, preserve the installation, continue the development task, and report only an actionable local condition such as a non-Git install, untrusted origin, dirty checkout, or divergence. Do not retry in the same conversation.
+Treat `cached` and `up_to_date` as silent success. If it returns `updated`, reread this entrypoint and any already-used references that changed, then continue the authorized task with the refreshed instructions. Do not rerun the updater or restart the user's active runtime as part of this refresh. If it refuses or cannot check, preserve the installation, continue the development task, and report only an actionable local condition such as a non-Git install, untrusted origin, dirty checkout, or divergence. Do not retry in the same conversation.
 
 Read [updates.md](references/updates.md) only when installing, diagnosing, configuring, or manually running updates. The updater may change only the Silverlocks checkout and its Git metadata; it must not alter the user's project workspace.
 

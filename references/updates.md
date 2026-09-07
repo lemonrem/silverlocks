@@ -41,7 +41,7 @@ python3 scripts/update.py --force --check-only
 
 Important actions include `updated`, `up_to_date`, `cached`, `update_available`, `not_git_install`, `untrusted_origin`, `dirty_worktree`, `diverged`, and `network_error`.
 
-When an update is applied, finish the current task with the already-loaded instructions. Recommend one Codex restart afterward if immediate adoption of changed Skill instructions matters. Codex normally detects local Skill changes automatically, so no restart loop or service restart is part of this mechanism.
+When an update is applied, reread `SKILL.md` and any already-used references that changed, then continue the current task with the refreshed instructions. Codex normally detects local Skill changes automatically; if discovery does not refresh, restarting Codex is a fallback after the active task, not a prerequisite for continuing it. No restart loop or service restart is part of the updater.
 
 ## Installation requirement
 

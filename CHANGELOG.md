@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.2.2 - 2026-09-07
+
+- Treat contextual defect reports as requests to act; finish authorized work through implementation and verification instead of ending with explanations or offers.
+- Require an available authorized next action to be executed before ending an action task, while preserving analysis-only requests and concrete access or decision blockers.
+- Refresh loaded skill instructions after successful updates and publish a higher version so existing installations can receive these workflow fixes.
+
 ## 0.2.1 - 2026-09-06
 
 - Separated proportional planning from approval: carry existing authorization forward and ask only for material missing choices or authority.

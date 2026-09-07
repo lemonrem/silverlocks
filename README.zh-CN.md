@@ -9,6 +9,7 @@ Silverlocks 是一个轻量、无 Hook 的 Codex Skill。它让开发流程随�
 ## 它解决什么问题
 
 - 通过 Skill 描述和 `allow_implicit_invocation: true` 自动匹配开发任务。
+- 结合上下文把缺陷反馈识别为执行请求，遇到可修复失败继续处理，结束前检查是否还有应执行的已授权工作；明确要求只分析时仍保持只读。
 - 小型、清晰、可逆的修改保持 Direct，不强制进入 Plan。
 - 跨模块、接口或数据结构、安全、部署边界、重大歧义、可能跨会话的工作按需规划；沿用已有授权，只在缺少影响结果的关键选择或必要权限时询问。
 - 不替代或压制其他专业 Skill；只组合当前任务真正需要的能力。
@@ -89,7 +90,7 @@ python3 ~/.agents/skills/silverlocks/scripts/update.py --force
 python3 ~/.agents/skills/silverlocks/scripts/update.py --force --check-only
 ```
 
-自动升级不使用 Hook、守护进程、定时任务或系统启动项，只会修改 Silverlocks 自身的干净 Git 克隆及其 Git 元数据，不会修改业务仓库。普通提交不会自动应用；维护者提高 `VERSION` 后才视为新版本。旧于 `0.2.0` 或不含 `.git` 的复制式安装需要先手动更新或重新克隆一次。升级完成后 Codex 通常能自动发现变化；若需要确保新指令立即生效，在当前任务结束后重启一次 Codex。详细规则见 [updates.md](references/updates.md)。
+自动升级不使用 Hook、守护进程、定时任务或系统启动项，只会修改 Silverlocks 自身的干净 Git 克隆及其 Git 元数据，不会修改业务仓库。普通提交不会自动应用；维护者提高 `VERSION` 后才视为新版本。旧于 `0.2.0` 或不含 `.git` 的复制式安装需要先手动更新或重新克隆一次。升级成功后重新读取入口和当前任务已使用且有变化的参考文件，继续执行。Codex 通常能自动发现变化；只有发现机制未刷新时，才在当前任务结束后以重启作为后备方式。详细规则见 [updates.md](references/updates.md)。
 
 ## 与仓库无关的运行方式
 
