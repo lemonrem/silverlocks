@@ -28,7 +28,7 @@ Write an actionable plan in the conversation or active planning facility. Create
 4. focused verification for each risky behavior;
 5. restart, migration, release, rollback, and archive steps when applicable.
 
-Keep the plan proportional. Do not turn ordinary edits into project management ceremony. Once an approved plan is clear, execute it without asking again at each reversible implementation step.
+Keep the plan proportional. Do not turn ordinary edits into project management ceremony. Once the intended outcome and authorization are clear, execute the plan without asking again at each reversible implementation step.
 
 Planning never replaces specialist skill routing. Use explicitly named skills and the smallest set of unambiguously applicable domain skills under their own trigger rules. Do not load every loosely related skill merely because a plan has several steps.
 
@@ -41,7 +41,8 @@ Choose the smallest checks that can falsify the changed behavior:
 - do not build every component in the workspace by habit;
 - run a full build or broad suite only when workspace instructions, release policy, dependency or build configuration changes, or the blast radius requires it;
 - do not repeat an equivalent passing check without new evidence;
-- report checks that were intentionally left to the developer.
+- follow the entrypoint's failure-handling rule when a check fails: diagnose, correct within scope, and rerun the affected check before concluding;
+- leave checks to the developer only when the user or workspace rules assign them that role, or a concrete blocker prevents execution; state that limitation explicitly.
 
 For user-interface appearance, do not use browser automation, screenshots, or computer vision as an implicit acceptance gate. Make the code-level checks that are useful and leave visual review to the developer unless the user explicitly requests visual inspection.
 

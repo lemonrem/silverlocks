@@ -27,7 +27,15 @@ Read [updates.md](references/updates.md) only when installing, diagnosing, confi
 
 Before changing a repository, discover its local instructions and inspect only the code, configuration, current diff, and evidence needed to understand the affected behavior. Preserve unrelated and user-owned changes. Trace the relevant contract or failure to its boundary, then implement the smallest coherent solution rather than a symptom-only patch.
 
-After editing, run focused checks that could disprove the solution, inspect the resulting diff, and report the outcome plus anything intentionally left for the developer. Update continuity only at a meaningful pause or changed frontier, and create the required tracked recovery record when the user requests a commit or release.
+After editing, run focused checks that could disprove the solution and inspect the resulting diff. Apply the failure-handling rule below before reporting completion. Leave work to the developer only when explicitly assigned to them by the user or applicable workspace rules, or when a concrete blocker requires their action. Update continuity only at a meaningful pause or changed frontier, and create the required tracked recovery record when the user requests a commit or release.
+
+### Continue through failures within the authorized task
+
+When the user requests a fix or implementation, or reports a defect in ongoing work, carry the task through diagnosis, correction, and verification. Explaining the cause, finding a failing check, or proposing a fix is progress, not completion. Give the explanation as a progress update and perform the next authorized action in the same turn; do not end with an offer to fix it or require the user to say “修复” or “继续” again. Respect an explicit analysis-only, review-only, or read-only request.
+
+If a command, test, build, or runtime check fails, use the new evidence to correct the implementation or execution approach and rerun the affected check. Inspect relevant configuration and documented alternatives for environment failures. Do not repeat an unchanged failing action without new evidence, bypass access controls, or rerun an external mutation before establishing its outcome and whether retrying is safe. Preserve the original objective when a follow-up asks for an explanation or status unless the user explicitly pauses or changes the task.
+
+Pause dependent work only when completion requires unavailable access, credentials, external state, an essential user decision, or an action outside the existing authorization. Complete useful independent work first, then state the specific blocker, what remains incomplete, and the minimum input needed. Do not manufacture an approval gate for a routine reversible correction, and do not treat permission to assess a system as permission to deploy or change it.
 
 ## Resume once, not continuously
 
