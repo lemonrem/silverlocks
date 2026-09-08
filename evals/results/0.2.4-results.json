@@ -1,0 +1,19 @@
+{
+  "baseline": {
+    "post_repair_tests": "5/5 passed",
+    "test_file_unchanged": true,
+    "source_modified": true
+  },
+  "candidate": {
+    "post_repair_tests": "5/5 passed",
+    "test_file_unchanged": true,
+    "source_modified": true
+  },
+  "readonly": {
+    "all_fixture_files_unchanged": true
+  },
+  "candidate_instruction_sha256": {
+    "SKILL.md": "62fc1ecd2d011f8a800a3c8f82dba07072367d7765f51337146c63b60bcaf34e",
+    "references/planning-and-verification.md": "17987386647a376da03e4a461a44ab731bfc3aaab6a467bf1916f03eaa46730e"
+  }
+}

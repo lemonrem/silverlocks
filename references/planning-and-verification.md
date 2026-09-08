@@ -34,6 +34,8 @@ Planning never replaces specialist skill routing. Use explicitly named skills an
 
 ## Diagnose without cycling
 
+First retain the user's requested outcome: diagnosis-only ends in findings, while an authorized defect task ends in repaired behavior with current verification. This reference is an investigation stage of the latter task, not a reason to downgrade it to analysis-only. Once evidence establishes the cause, implement the scoped correction in the same turn and run affected checks. If the agent previously delivered only a causal explanation, resume the still-pending implementation; do not require a fresh repair command.
+
 Reproduce the failure or characterize its conditions, inspect recent changes, and trace expected versus actual behavior across the relevant boundary. State a falsifiable cause and choose the smallest experiment that separates it from alternatives. Reuse existing debug notes after checking them against current code. Prefer shared-cause repairs over caller-specific patches, longer sleeps, or more retries.
 
 When a previous repair fails or the user reports recurrence, retain a compact failure record before the next speculative edit: symptom/reproduction, attempted hypothesis, observed result, what must not be repeated without new evidence, and the next distinguishing experiment. Keep it in working context for a short task; persist it in the project's existing debug/current-state record when repeated failure, interruption, compaction, or handoff could lose that evidence. Link tests and commits rather than copying logs.

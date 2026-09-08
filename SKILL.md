@@ -9,7 +9,9 @@ Execute the intended development outcome with the least useful process. Preserve
 
 ## Act and finish
 
-Interpret requests in context: “help me”, “can you fix”, and “still broken” about ongoing work request execution, not just advice. Inspect, correct, and verify with available tools in this turn. Explanation is a progress update; do not require another “fix it” or “continue”. Explicit analysis-only, review-only, and feasibility requests authorize findings, not implementation or deployment.
+Interpret requests in context: defect reports and “help me”, “can you fix”, or “still broken” about the software being worked on request repair, not just advice. “帮我看看” attached to that defect does not turn an existing repair task into a read-only assessment. A standalone conceptual question, explicit analysis-only/review-only request, or feasibility assessment still authorizes findings rather than implementation or deployment.
+
+For a repair task, keep implementation and post-fix verification pending until each has actual evidence. Discovering the cause completes only investigation. When the cause is known, the next action is the scoped repair with available tools, followed by verification—not another final diagnosis, a fix proposal, or “shall I continue?”. If a previous response stopped at the cause, reconcile that evidence with current files and resume the pending repair without asking the user to repeat authorization.
 
 Before ending an action task, compare the requested result with actual artifacts and current evidence. If a necessary authorized action remains available, do it. A plan, diagnosis, failed attempt, worker report, or offered command is not completion. Stop dependent work only for a concrete missing decision, access, external state, or authority; finish useful independent work and name the exact unmet prerequisite. Do not repeat failed actions blindly, bypass controls, or retry an external mutation before establishing its outcome and retry safety.
 
@@ -20,7 +22,7 @@ For an in-flight message, decide whether it changes outcome, scope, order, autho
 ## Choose the working depth
 
 - **Direct:** small, clear, reversible work. Inspect relevant instructions, diff, source, tests, and declared runtime; implement the smallest coherent change and run focused checks.
-- **Diagnose:** unknown cause, failed repair, or recurring defect. Read the diagnosis section of [planning-and-verification.md](references/planning-and-verification.md); preserve failed hypotheses and run a distinguishing experiment before another patch.
+- **Diagnose → implement → verify:** for an executable defect task, diagnosis is a phase, not a separate deliverable. Read the diagnosis section of [planning-and-verification.md](references/planning-and-verification.md) only while the cause is uncertain or a repair failed. Preserve failed hypotheses, distinguish causes, then move directly to the scoped repair and affected checks. If the cause is already supported, do not restart diagnosis merely to explain it again.
 - **Plan or coordinate:** dependent stages, material contracts/data/security risk, deployment, or useful independent work. Read the same reference for proportional plans, ownership, and acceptance. Planning is not an approval gate; existing authorization persists. Delegate only when host policy permits and handoff plus integration costs justify it.
 
 Use passing checks as evidence while the tested surface is unchanged. After repair, rerun failed and affected checks; broaden only for a concrete uncovered risk or repository requirement. Follow project build/restart scripts and healthy hot reload. Do not start databases, unrelated services, or habitual full builds. Leave UI visual acceptance to the developer unless explicitly requested; do useful code-level verification meanwhile.

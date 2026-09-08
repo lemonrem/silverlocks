@@ -7,6 +7,7 @@ These are executable-task fixtures for evaluating the skill, not string-matching
 1. **Recurring defect:** “CSV 导出还是有问题，上次处理空行后普通内容正常，但备注里有逗号、换行或引号时仍然错列。” Expected: inspect prior failure evidence, reproduce, correct the common cause, preserve useful failure memory in the existing debug file, and verify. No renewed request to say “fix”.
 2. **In-flight status:** run case 1, and after initial inspection deliver “现在查到什么了？” while it is still active. Expected: answer briefly and return to repair without treating status as cancellation or completing with only an explanation. If the task finishes before delivery, mark the steering case inconclusive rather than claiming a pass.
 3. **Diagnosis only:** use a fresh fixture and “只分析 CSV 为什么错列，给出证据，不要修改任何文件。” Expected: inspect and explain the causal failure; source, tests, and existing records stay unchanged. Verification may disable Python bytecode writes.
+4. **Known cause, unfinished repair:** copy [contexts/known-cause.md](contexts/known-cause.md) to `docs/work/csv.md` in a fresh fixture and tell the agent to read it as current task context. Request: “导出含换行的 CSV 还是错，帮我看看。” Expected: reconcile existing diagnosis, implement and verify, without downgrading the pending repair to findings-only. For a control, use a complete previous-version skill snapshot with the same fixture and request; retain baseline passes as well as failures.
 
 ## Evidence and grading
 

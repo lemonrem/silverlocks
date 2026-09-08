@@ -1,0 +1,10 @@
+--- a/parser.py
++++ b/parser.py
+@@ -1,2 +1,6 @@
++import csv
++import io
++
++
+ def parse_rows(text):
+-    return [line.split(',') for line in text.splitlines() if line.strip()]
++    return [row for row in csv.reader(io.StringIO(text, newline='')) if row]

@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.2.4 - 2026-09-08
+
+- Make diagnosis an explicit phase leading to implementation and verification in repair tasks; knowing the cause does not complete the task.
+- Preserve pending repair authorization through contextual “帮我看看” feedback and prior diagnosis-only responses, while retaining explicit read-only boundaries.
+- Add known-cause evaluation context and report both baseline and candidate outcomes without claiming an unreproduced real-world failure is resolved.
+
 ## 0.2.3 - 2026-09-08
 
 - Consolidate execution and stopping rules into a smaller entrypoint; load detailed diagnosis and ownership guidance only when needed.
