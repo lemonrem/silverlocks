@@ -4,7 +4,7 @@ Keep resumable state compact and keep historical records out of normal startup c
 
 ## Current frontier
 
-Use `<workspace>/.silverlocks/CURRENT.md` only when work may need to resume in another conversation. Do not create it for a completed one-turn fix.
+Use the repository's explicitly named current-state file and its schema first. The bundled helper manages only `.silverlocks/CURRENT.md`; do not run it against a different convention or silently migrate that convention. Preserve the existing file with the repository's own workflow and do not create a second snapshot. Otherwise use `<workspace>/.silverlocks/CURRENT.md` when work must survive a real pause, handoff, context boundary, or repeated-failure investigation. Do not create it for a completed one-turn fix.
 
 The entrypoint already performs the once-per-conversation inspection. `should_read: true` means the file is structurally eligible, not necessarily relevant. Compare its objective with the current request; ignore unrelated context without deleting it. `stale_hint`, `revision_changed`, and `age_days` are advisory and never automatically invalidate a recoverable task.
 
@@ -15,6 +15,8 @@ The entrypoint already performs the once-per-conversation inspection. `should_re
 - one exact next action;
 - durable constraints and decisions;
 - minimal evidence such as an optional version-control revision or relevant plan path.
+
+For a recurring failure, put disproven hypotheses and a `Do not repeat without new evidence` note under `Constraints and decisions`, with observed results under `Evidence`. Keep the next distinguishing experiment under `Exact next action`. For interrupted or transferred work, include the current owner, pending execution point, blocker, and completion condition within the existing sections. Do not add mandatory schema fields or a record for every tool call. Prefer links to the existing debug/work record for detailed reusable findings.
 
 Never include credentials, tokens, sensitive endpoints, raw private logs, conversational transcripts, or a growing history of completed steps.
 

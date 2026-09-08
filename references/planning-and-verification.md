@@ -32,6 +32,24 @@ Keep the plan proportional. Do not turn ordinary edits into project management c
 
 Planning never replaces specialist skill routing. Use explicitly named skills and the smallest set of unambiguously applicable domain skills under their own trigger rules. Do not load every loosely related skill merely because a plan has several steps.
 
+## Diagnose without cycling
+
+Reproduce the failure or characterize its conditions, inspect recent changes, and trace expected versus actual behavior across the relevant boundary. State a falsifiable cause and choose the smallest experiment that separates it from alternatives. Reuse existing debug notes after checking them against current code. Prefer shared-cause repairs over caller-specific patches, longer sleeps, or more retries.
+
+When a previous repair fails or the user reports recurrence, retain a compact failure record before the next speculative edit: symptom/reproduction, attempted hypothesis, observed result, what must not be repeated without new evidence, and the next distinguishing experiment. Keep it in working context for a short task; persist it in the project's existing debug/current-state record when repeated failure, interruption, compaction, or handoff could lose that evidence. Link tests and commits rather than copying logs.
+
+Repeated disproof calls for a new diagnosis, not a new permission request or an arbitrary retry counter. Reassess the reproduction and shared assumptions; broaden investigation only where evidence points. If work was delegated, return the failed hypothesis and evidence to its integration owner for reassessment. Stop only at the entrypoint's concrete authority/input blockers; do not use escalation as a final handoff to the user when the current agent can investigate further.
+
+Distinguish infrastructure failure from product failure. If a test never started because its runner is unavailable, inspect the declared environment and use a supported runner or scoped environment repair. If assertions fail, repair the product. Do not weaken tests, change expected outcomes to match a defect, or claim an environment workaround verifies the implementation.
+
+## Ownership and handoff
+
+Keep one accountable owner for each mutable chain, including its implementation and affected verification. When delegation is permitted and useful, pass the settled outcome, allowed files, constraints, dependencies, acceptance commands, and relevant evidence. Avoid overlapping writers; keep shared interfaces with an explicit integration owner.
+
+The receiver reconciles the packet with current files, then acts from its exact next step. A worker returns its artifact/diff, observed cause or unknown, checks run, unresolved gaps, and next action if incomplete. The integration owner inspects those results and resolves in-scope gaps; a worker stopping is not the user's task completing. Run combined checks when integration changed the tested surface; do not automatically repeat every worker check.
+
+For a real session or ownership transfer, preserve outcome, current owner, verified progress, failed approaches, next action, blockers, and completion evidence in the existing work packet or current snapshot. An ordinary single-agent task needs no owner registry or handoff document.
+
 ## Verification budget
 
 Choose the smallest checks that can falsify the changed behavior:

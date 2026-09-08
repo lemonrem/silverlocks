@@ -10,11 +10,12 @@ Silverlocks 是一个轻量、无 Hook 的 Codex Skill。它让开发流程随�
 
 - 通过 Skill 描述和 `allow_implicit_invocation: true` 自动匹配开发任务。
 - 结合上下文把缺陷反馈识别为执行请求，遇到可修复失败继续处理，结束前检查是否还有应执行的已授权工作；明确要求只分析时仍保持只读。
+- 反复失败时保留已否定假设、失败证据和下一项区分性实验；中途追问状态后回到待完成工作，优先复用仓库已有连续性约定。
 - 小型、清晰、可逆的修改保持 Direct，不强制进入 Plan。
 - 跨模块、接口或数据结构、安全、部署边界、重大歧义、可能跨会话的工作按需规划；沿用已有授权，只在缺少影响结果的关键选择或必要权限时询问。
 - 不替代或压制其他专业 Skill；只组合当前任务真正需要的能力。
 - 优先定向测试与受影响组件重启，不习惯性跑全量回归、全量构建或全部服务重启。
-- 使用单个、全量替换的 `.silverlocks/CURRENT.md` 保存可恢复现场。
+- 优先用仓库明确指定的当前状态文件保存现场；没有既有约定时使用单个、全量替换的 `.silverlocks/CURRENT.md`。
 - 用户明确要求留档时进行归档；Git 提交和发版必须附带仓库内受版本控制的 Markdown 恢复记录。
 
 ## 为什么不使用 Hook
@@ -151,6 +152,8 @@ silverlocks/
 python3 -m unittest discover -s tests -v
 python3 /path/to/skill-creator/scripts/quick_validate.py .
 ```
+
+行为测试样例和运行方法见 [evals/README.md](evals/README.md)，验证实际修复、中途追问处理和只读边界；辅助脚本单元测试本身不代表任务完成率。
 
 ## 许可与来源
 

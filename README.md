@@ -10,11 +10,12 @@ It is a standalone Skill, not a plugin. Installing it does not start a daemon, r
 
 - Automatically applies to software-development tasks through its skill description and `allow_implicit_invocation: true` metadata.
 - Treats defect feedback as a request to act in context, continues through fixable failures, and checks for remaining authorized work before ending the task. Explicit analysis-only requests remain read-only.
+- Keeps failed hypotheses and the next distinguishing experiment for recurring defects; a status question returns to the pending work. Existing repository continuity conventions take precedence over the default snapshot.
 - Keeps small, clear, reversible changes in a direct workflow.
 - Plans cross-module or higher-risk work proportionally, carrying forward existing authorization and asking only for material missing decisions or authority.
 - Preserves every relevant specialist Skill instead of replacing or suppressing it.
 - Uses focused tests and component-scoped restarts instead of habitual full regression and full builds.
-- Keeps resumable state in one compact, replace-only `.silverlocks/CURRENT.md` file.
+- Keeps resumable state in the repository's declared current-state file, or one compact, replace-only `.silverlocks/CURRENT.md` by default.
 - Creates intentional local archives and requires a tracked Markdown recovery record for Git commits and releases.
 
 ## Why no Hooks?
@@ -151,6 +152,8 @@ Requirements: Python 3.10 or newer. Git is optional; when present, the helper re
 python3 -m unittest discover -s tests -v
 python3 /path/to/skill-creator/scripts/quick_validate.py .
 ```
+
+Behavioral fixtures and evaluation instructions are in [evals/README.md](evals/README.md). They check actual repair, interruption handling, and read-only behavior; the helper unit suite alone does not measure task completion.
 
 ## License and origin
 

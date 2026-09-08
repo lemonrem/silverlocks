@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.2.3 - 2026-09-08
+
+- Consolidate execution and stopping rules into a smaller entrypoint; load detailed diagnosis and ownership guidance only when needed.
+- Preserve disproven hypotheses, failed approaches, and the next distinguishing experiment for recurring defects; return to the active task after status questions.
+- Prefer repository-defined continuity files over a competing Silverlocks snapshot and keep implementation plus affected verification with one owner.
+- Add reproducible behavioral fixtures for recurring failures, in-flight status questions, and diagnosis-only boundaries.
+
 ## 0.2.2 - 2026-09-07
 
 - Treat contextual defect reports as requests to act; finish authorized work through implementation and verification instead of ending with explanations or offers.

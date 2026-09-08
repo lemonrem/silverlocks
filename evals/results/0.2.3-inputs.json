@@ -1,0 +1,15 @@
+{
+  "version": "0.2.3",
+  "base_commit": "f2ca86189307b911dd01903412992f01c0809741",
+  "instruction_sha256": {
+    "SKILL.md": "6d73d279111f300b0999c3d98a174c074d0110f9b0e7580b8da8631187e6333c",
+    "references/planning-and-verification.md": "56e5b0c0db2067e8a8b856aae404a16461234dcf40efd9c2bb1d59fce808abc2",
+    "references/continuity.md": "6022a359d72c1d06518fd6870be4c3822e49069982370dc4dc2ac2e9daea95e9"
+  },
+  "fixture_sha256": {
+    "AGENTS.md": "71517c51a94b830b7319582ebd55a86ba41be0404be9e4f7ce9b99bbc08c0698",
+    "docs/debug/csv.md": "14875719b5c43b31b479e16d75a554800394693bf0f8efd18ac325e13c605d46",
+    "parser.py": "0302da727f2c65507cef5bc27245f75a6a6b66eb2b1da524c5895763e5b5951f",
+    "test_parser.py": "a05207dca2cf9b64448d113609953539f57eee4a3a7126e64432e3032978419b"
+  }
+}

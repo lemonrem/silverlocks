@@ -1,0 +1,30 @@
+--- a/parser.py
++++ b/parser.py
+@@ -1,2 +1,15 @@
++import csv
++import io
++
++
+ def parse_rows(text):
+-    return [line.split(',') for line in text.splitlines() if line.strip()]
++    stream = io.StringIO(text, newline='')
++    rows = []
++    start = 0
++    for row in csv.reader(stream):
++        end = stream.tell()
++        # Skip blank records only after parsing, preserving quoted whitespace.
++        if row and text[start:end].strip():
++            rows.append(row)
++        start = end
++    return rows
+--- a/docs/debug/csv.md
++++ b/docs/debug/csv.md
+@@ -5,3 +5,8 @@
+ - Disproven assumption: removing blank lines is sufficient to restore CSV record boundaries.
+ - Do not repeat without new evidence: another whitespace-only patch.
+ - Current implementation and test results take precedence over this history.
++
++- Confirmed reproduction: `python3 -m unittest -v` passed plain/empty input but failed all three quoted comma, newline, and escaped-quote cases. This distinguishes CSV record parsing from the disproven blank-line hypothesis.
++- Cause: `splitlines()` and `split(',')` treat quoted delimiters as record/field boundaries and leave escaped quotes undecoded.
++- Repair: use the standard CSV reader on a newline-preserving text stream; skip blank records after parsing so quoted whitespace and embedded blank lines remain intact.
++- Verification: all 5 immutable unit tests passed after repair. Four additional inline checks passed for blank/whitespace-only records, combined comma/newline/escaped quotes with embedded blank lines, quoted empty/whitespace fields and empty columns, and CRLF within quoted content.
